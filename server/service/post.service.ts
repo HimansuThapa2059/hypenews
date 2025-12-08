@@ -1,9 +1,10 @@
 import { db } from "@/lib/db/db";
 import { user as userTable } from "@/lib/db/schema/auth-schema";
+import { commentsTable } from "@/lib/db/schema/comment-schema";
 import { postsTable } from "@/lib/db/schema/post-schema";
 import { postUpvotesTable } from "@/lib/db/schema/upvote-schema";
 import { toIsoTimestampSql } from "@/lib/utils";
-import type { paginationType } from "@/shared/types";
+import type { Comment, paginationType } from "@/shared/types";
 import type { User } from "better-auth";
 import { and, asc, countDistinct, desc, eq, sql } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
@@ -151,3 +152,82 @@ export const upvotePostService = async ({
 
   return { count: points, isUpvoted: pointsChange > 0 };
 };
+
+// Custom Error Classes (for better error handling in Express)
+export class PostNotFoundError extends Error {
+  constructor(message: string = "Post not found") {
+    super(message);
+    this.name = "PostNotFoundError";
+    Object.setPrototypeOf(this, PostNotFoundError.prototype);
+  }
+}
+
+export class CommentCreationError extends Error {
+  constructor(message: string = "Failed to create comment") {
+    super(message);
+    this.name = "CommentCreationError";
+    Object.setPrototypeOf(this, CommentCreationError.prototype);
+  }
+}
+
+/**
+ * Creates a new comment for a specified post.
+ * @param postId The ID of the post.
+ * @param content The content of the comment.
+ * @param user The authenticated user object.
+ * @returns The newly created comment with enriched author data.
+ * @throws {PostNotFoundError} If the post does not exist.
+ * @throws {CommentCreationError} If the comment insertion fails.
+ */
+export async function createCommentForPost(
+  postId: number,
+  content: string,
+  user: User
+): Promise<Comment> {
+  const newlyCreatedComment = await db.transaction(async (tx) => {
+    const [updatedPost] = await tx
+      .update(postsTable)
+      .set({ commentCount: sql`${postsTable.commentCount} + 1` })
+      .where(eq(postsTable.id, postId))
+      .returning({ commentCount: postsTable.commentCount });
+
+    if (!updatedPost) {
+      throw new HTTPException(404, { message: "Post not found" });
+    }
+
+    const [insertedComment] = await tx
+      .insert(commentsTable)
+      .values({
+        content,
+        userId: user.id,
+        postId: postId,
+      })
+      .returning({
+        id: commentsTable.id,
+        userId: commentsTable.userId,
+        postId: commentsTable.postId,
+        depth: commentsTable.depth,
+        content: commentsTable.content,
+        points: commentsTable.points,
+        parentCommentId: commentsTable.parentCommentId,
+        createdAt: toIsoTimestampSql(commentsTable.createdAt).as("created_at"),
+        commentCount: commentsTable.commentCount,
+      });
+
+    if (!insertedComment) {
+      throw new CommentCreationError("Failed to insert comment into database.");
+    }
+
+    return insertedComment;
+  });
+
+  return {
+    ...newlyCreatedComment,
+    commentUpvotes: [],
+    childComments: [],
+    author: {
+      username: user.name,
+      id: user.id,
+    },
+  } as Comment;
+}

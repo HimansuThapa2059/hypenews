@@ -73,3 +73,23 @@ export type PaginatedResponse<T> = {
 } & Omit<SuccessResponse, "data">;
 
 export const createCommentSchema = insertCommentsSchema.pick({ content: true });
+
+export type Comment = {
+  id: number;
+  userId: string;
+  content: string;
+  points: number;
+  depth: number;
+  commentCount: number;
+  createdAt: string;
+  postId: number;
+  parentCommentId: number | null;
+  commentUpvotes: {
+    userId: string;
+  }[];
+  author: {
+    username: string;
+    id: string;
+  };
+  childComments?: Comment[];
+};

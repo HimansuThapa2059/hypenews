@@ -1,6 +1,15 @@
-import { createPost, getPaginatedPosts, upvotePosts } from "@/controllers";
+import {
+  createPost,
+  getPaginatedPosts,
+  upvotePosts,
+  createComment,
+} from "@/controllers";
 import { requireAuth } from "@/middlewares/requireAuth";
-import { createPostSchema, paginationSchema } from "@/shared/types";
+import {
+  createCommentSchema,
+  createPostSchema,
+  paginationSchema,
+} from "@/shared/types";
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import z from "zod";
@@ -15,6 +24,17 @@ postRouter
     requireAuth,
     zValidator("param", z.object({ postId: z.coerce.number() })),
     upvotePosts
+  )
+  .post(
+    "/:postId/comment",
+    zValidator(
+      "param",
+      z.object({
+        postId: z.coerce.number(),
+      })
+    ),
+    zValidator("form", createCommentSchema),
+    createComment
   );
 
 export default postRouter;

@@ -12,7 +12,7 @@ export const commentsTable = pgTable("comments", {
   postId: integer("post_id").notNull(),
   parentCommentId: integer("parent_comment_id"),
   content: text("content").notNull(),
-
+  depth: integer("depth").default(0).notNull(),
   commentCount: integer("comment_count").default(0).notNull(),
   points: integer("points").default(0).notNull(),
 

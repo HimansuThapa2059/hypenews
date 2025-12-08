@@ -1,9 +1,11 @@
 import {
+  createCommentForPost,
   createPostService,
   getPaginatedPostsService,
   upvotePostService,
 } from "@/service/post.service";
 import {
+  type Comment,
   type PaginatedResponse,
   type Post,
   type SuccessResponse,
@@ -100,5 +102,30 @@ export const upvotePosts = async (c: Context) => {
   } catch (err) {
     console.error(err);
     return c.json({ success: false, message: "Server error" }, 500);
+  }
+};
+
+export const createComment = async (c: Context) => {
+  const user = c.get("user")!;
+  if (!user || !user.id) {
+    throw new HTTPException(401, { message: "Unauthorized" });
+  }
+
+  const { postId } = c.req.valid("param");
+  const { content } = c.req.valid("form");
+
+  try {
+    const comment = await createCommentForPost(postId, content, user);
+
+    return c.json<SuccessResponse<Comment>>({
+      success: true,
+      message: "Comment created",
+      data: comment,
+    });
+  } catch (error) {
+    if (error instanceof HTTPException) {
+      throw error;
+    }
+    throw new HTTPException(500, { message: "Internal server error" });
   }
 };
