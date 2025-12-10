@@ -1,4 +1,6 @@
 declare module "eslint-plugin-drizzle" {
-  const plugin: any;
+  import type { ESLint } from "eslint";
+
+  const plugin: ESLint.Plugin;
   export default plugin;
 }

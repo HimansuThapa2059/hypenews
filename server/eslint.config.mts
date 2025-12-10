@@ -7,7 +7,11 @@ import drizzlePlugin from "eslint-plugin-drizzle";
 export default defineConfig([
   {
     files: ["**/*.{js,mjs,cjs,ts,mts,cts}"],
-    plugins: { js, "@typescript-eslint": tseslint.plugin, drizzlePlugin },
+    plugins: {
+      js,
+      "@typescript-eslint": tseslint.plugin,
+      drizzle: drizzlePlugin,
+    },
     extends: ["js/recommended"],
     languageOptions: {
       globals: globals.browser,
@@ -18,5 +22,7 @@ export default defineConfig([
       "drizzle/enforce-update-with-where": "error",
     },
   },
+
+  // TypeScript defaults
   tseslint.configs.recommended,
 ]);

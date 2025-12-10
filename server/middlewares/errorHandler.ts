@@ -20,6 +20,7 @@ export function errorHandler(err: unknown, c: Context) {
       typeof err.cause === "object" &&
       err.cause !== null &&
       "form" in err.cause &&
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (err.cause as any).form === true;
 
     return c.json<errorResponse>(
@@ -35,7 +36,8 @@ export function errorHandler(err: unknown, c: Context) {
   const message =
     process.env.NODE_ENV === "production"
       ? "Internal Server Error"
-      : ((err as any).stack ?? String(err));
+      : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ((err as any).stack ?? String(err));
 
   return c.json<errorResponse>({ success: false, error: message }, 500);
 }
