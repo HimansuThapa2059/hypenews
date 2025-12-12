@@ -12,7 +12,7 @@ function RootComponent() {
     <>
       <div className="flex min-h-screen flex-col text-foreground">
         <Header />
-        <main className="grow p-4 container mx-auto">
+        <main className="grow p-4 container mx-auto flex items-center justify-center">
           <Outlet />
         </main>
         <footer className="border-t py-4">

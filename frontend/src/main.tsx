@@ -6,6 +6,7 @@ import "./globals.css";
 import { Loader2 } from "lucide-react";
 import { NotFound } from "./components/not-found";
 import { ErrorComponent } from "./components/error";
+import { Toaster } from "./components/ui/sonner";
 
 const queryClient = new QueryClient();
 const router = createRouter({
@@ -36,6 +37,7 @@ if (!rootElement.innerHTML) {
   root.render(
     <QueryClientProvider client={queryClient}>
       <RouterProvider router={router} />
+      <Toaster richColors />
     </QueryClientProvider>
   );
 }
