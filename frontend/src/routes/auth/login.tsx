@@ -5,10 +5,9 @@ import {
   useRouter,
 } from "@tanstack/react-router";
 import { useForm } from "@tanstack/react-form";
-import { useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import { useEffect } from "react";
-
+import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -20,79 +19,57 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FieldInfo } from "@/components/field-info";
-
-import { signupFormSchema } from "@/shared/validators";
+import { signinFormSchema } from "@/shared/validators";
 import { getErrorMessage } from "@/utils/getZodErrorMessage";
 import { Google } from "@/components/logos/google";
 import { GitHub } from "@/components/logos/github";
 import { authClient, useSession } from "@/lib/auth";
 import { toast } from "sonner";
-
-const signupSearchSchema = z.object({
+const loginSearchSchema = z.object({
   redirect: z.string().optional().default("/"),
 });
-
-export const Route = createFileRoute("/signup")({
-  component: Signup,
-  validateSearch: (search) => signupSearchSchema.parse(search),
+export const Route = createFileRoute("/auth/login")({
+  component: Login,
+  validateSearch: (search) => loginSearchSchema.parse(search),
 });
-
-function Signup() {
+function Login() {
   const search = Route.useSearch();
   const navigate = useNavigate();
   const router = useRouter();
   const queryClient = useQueryClient();
-
   const { data: session, isPending } = useSession();
-
   useEffect(() => {
     if (!isPending && session?.user) {
       navigate({ to: search.redirect });
     }
   }, [isPending, session, navigate, search.redirect]);
-
   const form = useForm({
-    defaultValues: {
-      name: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-    },
-    validators: {
-      onChange: signupFormSchema,
-      onSubmit: signupFormSchema,
-    },
+    defaultValues: { email: "", password: "" },
+    validators: { onSubmit: signinFormSchema },
     onSubmit: async ({ value }) => {
-      await authClient.signUp.email(
-        {
-          name: value.name,
-          email: value.email,
-          password: value.password,
-        },
+      await authClient.signIn.email(
+        { email: value.email, password: value.password },
         {
           onSuccess: async () => {
-            toast.success("Welcome!", {
-              description: "Your account has been created successfully.",
+            toast.success("Welcome back!", {
+              description: "You have been logged in successfully.",
             });
             await queryClient.invalidateQueries({ queryKey: ["user"] });
             router.invalidate();
             await navigate({ to: search.redirect });
           },
           onError: async ({ error }) => {
-            toast.error("Registration failed", {
+            toast.error("Login failed", {
               description:
-                error.message || "There was a problem creating your account",
+                error.message || "There was a problem logging you in",
             });
           },
         }
       );
     },
   });
-
-  type SignupFieldName = "name" | "email" | "password" | "confirmPassword";
-
   const renderField = (
-    name: SignupFieldName,
+    name: "email" | "password",
     type: string,
     placeholder: string
   ) => (
@@ -104,9 +81,7 @@ function Signup() {
         return (
           <div className="grid gap-2 sm:gap-4" data-invalid={isInvalid}>
             <Label htmlFor={field.name}>
-              {name === "confirmPassword"
-                ? "Confirm Password"
-                : name.charAt(0).toUpperCase() + name.slice(1)}
+              {name.charAt(0).toUpperCase() + name.slice(1)}
             </Label>
             <Input
               id={field.name}
@@ -125,7 +100,6 @@ function Signup() {
       }}
     />
   );
-
   return (
     <div className="w-full h-full flex items-center justify-center">
       <Card className="max-w-md w-full border border-border/20 rounded-2xl shadow-sm">
@@ -138,24 +112,16 @@ function Signup() {
         >
           <CardHeader className="text-center gap-1 sm:gap-2 py-2">
             <CardTitle className="text-2xl font-semibold">
-              Sign Up to HypeNews
+              Log In to HypeNews
             </CardTitle>
             <CardDescription>
-              Please enter your details to sign up
+              Please enter your details to log in
             </CardDescription>
           </CardHeader>
-
           <CardContent className="space-y-6 px-6 py-4">
             <div className="grid gap-5">
-              {renderField("name", "text", "Enter your name")}
               {renderField("email", "email", "Enter your email")}
               {renderField("password", "password", "Enter your password")}
-              {renderField(
-                "confirmPassword",
-                "password",
-                "Confirm your password"
-              )}
-
               <form.Subscribe
                 selector={(state) => [state.canSubmit, state.isSubmitting]}
                 children={([canSubmit, isSubmitting]) => (
@@ -164,42 +130,42 @@ function Signup() {
                     disabled={!canSubmit}
                     className="w-full h-10 mt-2 cursor-pointer"
                   >
-                    {isSubmitting ? "..." : "Sign up to HypeNews"}
+                    {isSubmitting ? "..." : "Log In to HypeNews"}
                   </Button>
                 )}
               />
             </div>
-
             <div className="flex items-center">
               <div className="flex-1 h-px bg-border" />
               <span className="px-3 text-xs text-muted-foreground">OR</span>
               <div className="flex-1 h-px bg-border" />
             </div>
-
             <div className="grid grid-cols-2 gap-4">
               <Button
                 type="button"
                 variant="outline"
                 className="flex items-center gap-3 w-full cursor-pointer"
+                onClick={() => {
+                  console.log("Google login initiated");
+                }}
               >
-                <Google className="w-5 h-5" />
-                Google
+                <Google className="w-5 h-5" /> Google
               </Button>
-
               <Button
                 type="button"
                 variant="outline"
                 className="flex items-center gap-3 w-full cursor-pointer"
+                onClick={() => {
+                  console.log("GitHub login initiated");
+                }}
               >
-                <GitHub className="w-5 h-5" />
-                GitHub
+                <GitHub className="w-5 h-5" /> GitHub
               </Button>
             </div>
-
             <div className="text-center text-sm">
-              Already have an account?{" "}
-              <Link to="/login" search={search} className="underline">
-                Log in
+              Don&apos;t have an account?
+              <Link to="/auth/signup" search={search} className="underline">
+                Sign up
               </Link>
             </div>
           </CardContent>

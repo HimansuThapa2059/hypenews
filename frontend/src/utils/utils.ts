@@ -1,3 +1,5 @@
+import { DateTime } from "luxon";
+
 export const formatName = (name: string) => {
   if (!name) {
     return "";
@@ -27,5 +29,19 @@ export const formatName = (name: string) => {
     } else {
       return firstWord;
     }
+  }
+};
+
+export const relativeTime = (date: string) => {
+  const datetime = DateTime.fromISO(date);
+  return datetime.toRelative();
+};
+
+export const getHostname = (url: string) => {
+  try {
+    const normalizedUrl = url.startsWith("http") ? url : `https://${url}`;
+    return new URL(normalizedUrl).hostname;
+  } catch {
+    return url;
   }
 };

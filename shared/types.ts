@@ -1,5 +1,5 @@
-import { insertCommentsSchema } from "@/lib/db/schema/comment-schema";
-import { insertPostSchema } from "@/lib/db/schema/post-schema";
+import { insertCommentsSchema } from "../server/lib/db/schema/comment-schema";
+import { insertPostSchema } from "../server/lib/db/schema/post-schema";
 
 import z from "zod";
 
@@ -35,21 +35,24 @@ export type SortBy = z.infer<typeof sortBySchema>;
 export type Order = z.infer<typeof orderSchema>;
 
 export const paginationSchema = z.object({
-  limit: z
+  limit: z.coerce
     .number()
     .optional()
     .default(10)
     .refine((val) => !isNaN(val), "Must be a valid number"),
-  page: z
+
+  page: z.coerce
     .number()
     .optional()
     .default(1)
     .refine((val) => !isNaN(val), "Must be a valid number"),
+
   sortBy: sortBySchema.optional().default("points"),
   order: orderSchema.optional().default("desc"),
   author: z.string().optional(),
   site: z.string().optional(),
 });
+
 export type paginationType = z.infer<typeof paginationSchema>;
 
 export type Post = {
@@ -62,7 +65,7 @@ export type Post = {
   commentCount: number;
   author: {
     id: string;
-    name: string;
+    username: string;
   } | null;
   isUpvoted: boolean;
 };

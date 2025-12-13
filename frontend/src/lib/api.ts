@@ -1,5 +1,12 @@
 import { hc } from "hono/client";
-import type { ApiRoutes, ErrorResponse, Order, SortBy } from "@/shared/types";
+import type {
+  ApiRoutes,
+  ErrorResponse,
+  Order,
+  SortBy,
+  PaginatedResponse,
+  Post,
+} from "@/shared/types";
 
 const client = hc<ApiRoutes>("/", {
   fetch: (input: RequestInfo | URL, init?: RequestInit) =>
@@ -20,7 +27,7 @@ export const getPosts = async ({
     author?: string;
     site?: string;
   };
-}) => {
+}): Promise<PaginatedResponse<Post[]>> => {
   const res = await client.posts.$get({
     query: {
       page: pageParam.toString(),
@@ -34,6 +41,6 @@ export const getPosts = async ({
     const data = (await res.json()) as unknown as ErrorResponse;
     throw new Error(data.error);
   }
-  const data = await res.json();
+  const data = (await res.json()) as PaginatedResponse<Post[]>;
   return data;
 };

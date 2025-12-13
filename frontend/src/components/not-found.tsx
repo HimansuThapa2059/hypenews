@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Button } from "./ui/button";
+import { defaultHomeSearchParams } from "@/routes";
 
 export function NotFound() {
   return (
@@ -8,7 +9,9 @@ export function NotFound() {
         <p className="text-4xl font-bold">404</p>
         <p className="text-lg">Page not found</p>
         <Button asChild>
-          <Link to="/">Go Home</Link>
+          <Link to="/" search={defaultHomeSearchParams}>
+            Go Home
+          </Link>
         </Button>
       </div>
     </div>

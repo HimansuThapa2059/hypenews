@@ -13,6 +13,7 @@ import { useState } from "react";
 import { authClient, useSession } from "@/lib/auth";
 import { toast } from "sonner";
 import { formatName } from "@/utils/utils";
+import { defaultHomeSearchParams } from "@/routes";
 
 const Header = () => {
   const navigate = useNavigate();
@@ -28,7 +29,7 @@ const Header = () => {
         description: "You have been logged out. See you soon!",
       });
 
-      navigate({ to: "/login", search: { redirect: "" } });
+      navigate({ to: "/auth/login", search: { redirect: "" } });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast.error("Logout failed", {
@@ -44,25 +45,33 @@ const Header = () => {
     <header className="sticky top-0 z-50 w-full border-border/40 bg-primary backdrop-blur supports-backdrop-filter:bg-primary/90">
       <div className="container mx-auto flex items-center justify-between p-2.5 sm:p-4">
         <div className="flex items-center space-x-4">
-          <Link to="/" className="text-xl sm:text-2xl font-bold">
+          <Link
+            to="/"
+            search={defaultHomeSearchParams}
+            className="text-xl sm:text-2xl font-bold"
+          >
             HypeNews
           </Link>
           <nav className="hidden items-center space-x-4 md:flex ml-5 tracking-wide font-medium">
             <Link
               to={"/"}
-              search={{ sortBy: "recent", order: "desc" }}
+              search={defaultHomeSearchParams}
               className="hover:underline"
             >
               new
             </Link>
             <Link
               to={"/"}
-              search={{ sortBy: "points", order: "desc" }}
+              search={defaultHomeSearchParams}
               className="hover:underline"
             >
               top
             </Link>
-            <Link to="/" className="hover:underline">
+            <Link
+              to="/"
+              search={defaultHomeSearchParams}
+              className="hover:underline"
+            >
               submit
             </Link>
           </nav>
@@ -70,7 +79,16 @@ const Header = () => {
         <div className="hidden md:flex items-center ml-4 gap-6">
           {user ? (
             <>
-              <Link to="/" className="flex items-center gap-2 cursor-pointer">
+              <Link
+                to="/"
+                search={{
+                  author: "",
+                  site: "",
+                  order: "desc",
+                  sortBy: "recent",
+                }}
+                className="flex items-center gap-2 cursor-pointer"
+              >
                 <div className="w-8 h-8 rounded-full bg-secondary-foreground text-primary-foreground flex items-center justify-center text-sm font-semibold">
                   {user.name?.[0]?.toUpperCase()}
                 </div>
@@ -92,7 +110,7 @@ const Header = () => {
               variant="outline"
               className="h-6 sm:h-8 cursor-pointer"
             >
-              <Link to="/login" search={{ redirect: "" }}>
+              <Link to="/auth/login" search={{ redirect: "" }}>
                 Log in
               </Link>
             </Button>
@@ -123,7 +141,12 @@ const Header = () => {
             <nav className="flex flex-col space-y-1 mt-">
               <Link
                 to="/"
-                search={{ sortBy: "recent", order: "desc" }}
+                search={{
+                  author: "",
+                  site: "",
+                  order: "desc",
+                  sortBy: "recent",
+                }}
                 className="px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition font-medium text-gray-800 dark:text-gray-200"
                 onClick={() => setIsOpen(false)}
               >
@@ -131,7 +154,12 @@ const Header = () => {
               </Link>
               <Link
                 to="/"
-                search={{ sortBy: "points", order: "desc" }}
+                search={{
+                  author: "",
+                  site: "",
+                  order: "desc",
+                  sortBy: "recent",
+                }}
                 className="px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition font-medium text-gray-800 dark:text-gray-200"
                 onClick={() => setIsOpen(false)}
               >
@@ -139,6 +167,12 @@ const Header = () => {
               </Link>
               <Link
                 to="/"
+                search={{
+                  author: "",
+                  site: "",
+                  order: "desc",
+                  sortBy: "recent",
+                }}
                 className="px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition font-medium text-gray-800 dark:text-gray-200"
                 onClick={() => setIsOpen(false)}
               >
@@ -151,6 +185,12 @@ const Header = () => {
                 <div className="mt-4 space-y-4">
                   <Link
                     to="/"
+                    search={{
+                      author: "",
+                      site: "",
+                      order: "desc",
+                      sortBy: "recent",
+                    }}
                     onClick={() => setIsOpen(false)}
                     className="flex items-center gap-3 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition rounded-lg"
                   >
@@ -175,14 +215,14 @@ const Header = () => {
                   </Button>
                 </div>
               ) : (
-                <div className="mt-4 border-t pt-4">
+                <div className="mt-4 pt-4">
                   <Button
                     asChild
                     variant="brand"
                     className="w-full cursor-pointer"
                     onClick={() => setIsOpen(false)}
                   >
-                    <Link to="/login" search={{ redirect: "" }}>
+                    <Link to="/auth/login" search={{ redirect: "" }}>
                       Log in
                     </Link>
                   </Button>
