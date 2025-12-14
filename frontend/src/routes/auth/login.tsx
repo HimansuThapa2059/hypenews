@@ -6,7 +6,6 @@ import {
 } from "@tanstack/react-router";
 import { useForm } from "@tanstack/react-form";
 import { z } from "zod";
-import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,29 +22,28 @@ import { signinFormSchema } from "@/shared/validators";
 import { getErrorMessage } from "@/utils/getZodErrorMessage";
 import { Google } from "@/components/logos/google";
 import { GitHub } from "@/components/logos/github";
-import { authClient, useSession } from "@/lib/auth";
+import { authClient } from "@/lib/auth";
 import { toast } from "sonner";
+
 const loginSearchSchema = z.object({
   redirect: z.string().optional().default("/"),
 });
+
 export const Route = createFileRoute("/auth/login")({
   component: Login,
   validateSearch: (search) => loginSearchSchema.parse(search),
 });
+
 function Login() {
   const search = Route.useSearch();
   const navigate = useNavigate();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { data: session, isPending } = useSession();
-  useEffect(() => {
-    if (!isPending && session?.user) {
-      navigate({ to: search.redirect });
-    }
-  }, [isPending, session, navigate, search.redirect]);
+
   const form = useForm({
     defaultValues: { email: "", password: "" },
     validators: { onSubmit: signinFormSchema },
+
     onSubmit: async ({ value }) => {
       await authClient.signIn.email(
         { email: value.email, password: value.password },
@@ -68,6 +66,7 @@ function Login() {
       );
     },
   });
+
   const renderField = (
     name: "email" | "password",
     type: string,
@@ -100,6 +99,7 @@ function Login() {
       }}
     />
   );
+
   return (
     <div className="w-full h-full flex items-center justify-center">
       <Card className="max-w-md w-full border border-border/20 rounded-2xl shadow-sm">
@@ -163,7 +163,7 @@ function Login() {
               </Button>
             </div>
             <div className="text-center text-sm">
-              Don&apos;t have an account?
+              Don&apos;t have an account?{" "}
               <Link to="/auth/signup" search={search} className="underline">
                 Sign up
               </Link>

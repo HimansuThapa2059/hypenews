@@ -7,8 +7,6 @@ import {
 import { useForm } from "@tanstack/react-form";
 import { useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
-import { useEffect } from "react";
-
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -25,7 +23,7 @@ import { signupFormSchema } from "@/shared/validators";
 import { getErrorMessage } from "@/utils/getZodErrorMessage";
 import { Google } from "@/components/logos/google";
 import { GitHub } from "@/components/logos/github";
-import { authClient, useSession } from "@/lib/auth";
+import { authClient } from "@/lib/auth";
 import { toast } from "sonner";
 
 const signupSearchSchema = z.object({
@@ -43,14 +41,6 @@ function Signup() {
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  const { data: session, isPending } = useSession();
-
-  useEffect(() => {
-    if (!isPending && session?.user) {
-      navigate({ to: search.redirect });
-    }
-  }, [isPending, session, navigate, search.redirect]);
-
   const form = useForm({
     defaultValues: {
       name: "",
@@ -58,10 +48,12 @@ function Signup() {
       password: "",
       confirmPassword: "",
     },
+
     validators: {
       onChange: signupFormSchema,
       onSubmit: signupFormSchema,
     },
+
     onSubmit: async ({ value }) => {
       await authClient.signUp.email(
         {
@@ -196,7 +188,7 @@ function Signup() {
               </Button>
             </div>
 
-            <div className="text-center text-sm ">
+            <div className="text-center text-sm tracking-wide">
               Already have an account?{" "}
               <Link to="/auth/login" search={search} className="underline">
                 Log in

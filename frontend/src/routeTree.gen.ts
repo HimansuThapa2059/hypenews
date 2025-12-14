@@ -8,23 +8,16 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { createFileRoute } from '@tanstack/react-router'
-
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PostRouteImport } from './routes/post'
 import { Route as AboutRouteImport } from './routes/about'
+import { Route as AuthRouteRouteImport } from './routes/auth/route'
+import { Route as ProtectedRouteRouteImport } from './routes/_protected/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthSignupRouteImport } from './routes/auth/signup'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
-import { Route as Auth_authLayoutRouteImport } from './routes/auth/__authLayout'
+import { Route as ProtectedCreatePostRouteImport } from './routes/_protected/create-post'
 
-const AuthRouteImport = createFileRoute('/auth')()
-
-const AuthRoute = AuthRouteImport.update({
-  id: '/auth',
-  path: '/auth',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const PostRoute = PostRouteImport.update({
   id: '/post',
   path: '/post',
@@ -35,6 +28,15 @@ const AboutRoute = AboutRouteImport.update({
   path: '/about',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthRouteRoute = AuthRouteRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProtectedRouteRoute = ProtectedRouteRouteImport.update({
+  id: '/_protected',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -43,76 +45,89 @@ const IndexRoute = IndexRouteImport.update({
 const AuthSignupRoute = AuthSignupRouteImport.update({
   id: '/signup',
   path: '/signup',
-  getParentRoute: () => AuthRoute,
+  getParentRoute: () => AuthRouteRoute,
 } as any)
 const AuthLoginRoute = AuthLoginRouteImport.update({
   id: '/login',
   path: '/login',
-  getParentRoute: () => AuthRoute,
+  getParentRoute: () => AuthRouteRoute,
 } as any)
-const Auth_authLayoutRoute = Auth_authLayoutRouteImport.update({
-  id: '/__authLayout',
-  getParentRoute: () => AuthRoute,
+const ProtectedCreatePostRoute = ProtectedCreatePostRouteImport.update({
+  id: '/create-post',
+  path: '/create-post',
+  getParentRoute: () => ProtectedRouteRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/post': typeof PostRoute
-  '/auth': typeof Auth_authLayoutRoute
+  '/create-post': typeof ProtectedCreatePostRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/signup': typeof AuthSignupRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/post': typeof PostRoute
-  '/auth': typeof Auth_authLayoutRoute
+  '/create-post': typeof ProtectedCreatePostRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/signup': typeof AuthSignupRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_protected': typeof ProtectedRouteRouteWithChildren
+  '/auth': typeof AuthRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/post': typeof PostRoute
-  '/auth': typeof AuthRouteWithChildren
-  '/auth/__authLayout': typeof Auth_authLayoutRoute
+  '/_protected/create-post': typeof ProtectedCreatePostRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/signup': typeof AuthSignupRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/post' | '/auth' | '/auth/login' | '/auth/signup'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/about'
+    | '/post'
+    | '/create-post'
+    | '/auth/login'
+    | '/auth/signup'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/post' | '/auth' | '/auth/login' | '/auth/signup'
+  to:
+    | '/'
+    | '/auth'
+    | '/about'
+    | '/post'
+    | '/create-post'
+    | '/auth/login'
+    | '/auth/signup'
   id:
     | '__root__'
     | '/'
+    | '/_protected'
+    | '/auth'
     | '/about'
     | '/post'
-    | '/auth'
-    | '/auth/__authLayout'
+    | '/_protected/create-post'
     | '/auth/login'
     | '/auth/signup'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ProtectedRouteRoute: typeof ProtectedRouteRouteWithChildren
+  AuthRouteRoute: typeof AuthRouteRouteWithChildren
   AboutRoute: typeof AboutRoute
   PostRoute: typeof PostRoute
-  AuthRoute: typeof AuthRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/post': {
       id: '/post'
       path: '/post'
@@ -127,6 +142,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_protected': {
+      id: '/_protected'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof ProtectedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -139,44 +168,57 @@ declare module '@tanstack/react-router' {
       path: '/signup'
       fullPath: '/auth/signup'
       preLoaderRoute: typeof AuthSignupRouteImport
-      parentRoute: typeof AuthRoute
+      parentRoute: typeof AuthRouteRoute
     }
     '/auth/login': {
       id: '/auth/login'
       path: '/login'
       fullPath: '/auth/login'
       preLoaderRoute: typeof AuthLoginRouteImport
-      parentRoute: typeof AuthRoute
+      parentRoute: typeof AuthRouteRoute
     }
-    '/auth/__authLayout': {
-      id: '/auth/__authLayout'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof Auth_authLayoutRouteImport
-      parentRoute: typeof AuthRoute
+    '/_protected/create-post': {
+      id: '/_protected/create-post'
+      path: '/create-post'
+      fullPath: '/create-post'
+      preLoaderRoute: typeof ProtectedCreatePostRouteImport
+      parentRoute: typeof ProtectedRouteRoute
     }
   }
 }
 
-interface AuthRouteChildren {
-  Auth_authLayoutRoute: typeof Auth_authLayoutRoute
+interface ProtectedRouteRouteChildren {
+  ProtectedCreatePostRoute: typeof ProtectedCreatePostRoute
+}
+
+const ProtectedRouteRouteChildren: ProtectedRouteRouteChildren = {
+  ProtectedCreatePostRoute: ProtectedCreatePostRoute,
+}
+
+const ProtectedRouteRouteWithChildren = ProtectedRouteRoute._addFileChildren(
+  ProtectedRouteRouteChildren,
+)
+
+interface AuthRouteRouteChildren {
   AuthLoginRoute: typeof AuthLoginRoute
   AuthSignupRoute: typeof AuthSignupRoute
 }
 
-const AuthRouteChildren: AuthRouteChildren = {
-  Auth_authLayoutRoute: Auth_authLayoutRoute,
+const AuthRouteRouteChildren: AuthRouteRouteChildren = {
   AuthLoginRoute: AuthLoginRoute,
   AuthSignupRoute: AuthSignupRoute,
 }
 
-const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
+const AuthRouteRouteWithChildren = AuthRouteRoute._addFileChildren(
+  AuthRouteRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ProtectedRouteRoute: ProtectedRouteRouteWithChildren,
+  AuthRouteRoute: AuthRouteRouteWithChildren,
   AboutRoute: AboutRoute,
   PostRoute: PostRoute,
-  AuthRoute: AuthRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

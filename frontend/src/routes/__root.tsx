@@ -1,4 +1,8 @@
-import { Outlet, createRootRoute, useRouter } from "@tanstack/react-router";
+import {
+  Outlet,
+  createRootRoute,
+  useRouterState,
+} from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import Header from "@/components/header";
@@ -8,8 +12,9 @@ export const Route = createRootRoute({
 });
 
 function RootComponent() {
-  const router = useRouter();
-  const isAuthPage = router.state.location.pathname.startsWith("/auth");
+  const { location } = useRouterState();
+
+  const isAuthPage = location.pathname.startsWith("/auth");
 
   return (
     <>
@@ -17,7 +22,9 @@ function RootComponent() {
         {!isAuthPage && <Header />}
 
         <main
-          className={`grow p-4 container mx-auto ${isAuthPage ? "flex items-center justify-center" : ""}`}
+          className={`grow container mx-auto ${
+            isAuthPage ? "flex items-center justify-center" : "p-4"
+          }`}
         >
           <Outlet />
         </main>
