@@ -100,6 +100,7 @@ export const getPost = async (postId: number) => {
     const data = await res.json();
     return data as SuccessResponse<Post>;
   } else {
+    // TODO: need to show not found page for not found posts
     // if (res.status === 404) {
     //   throw notFound();
     // }
@@ -161,3 +162,19 @@ export const getCommentComments = async (
     throw new Error(data.error);
   }
 };
+
+export async function upvoteComment(commentId: string) {
+  // await new Promise((r) => setTimeout(r, 3000));
+  // throw new Error("error");
+  const res = await client.comments[":commentId"].upvote.$post({
+    param: {
+      commentId: commentId,
+    },
+  });
+
+  if (res.ok) {
+    return await res.json();
+  }
+  const data = (await res.json()) as unknown as ErrorResponse;
+  throw Error(data.error);
+}

@@ -3,7 +3,7 @@ import { PostCard } from "@/components/postCard";
 import { SortBar } from "@/components/sortBar";
 import { Card, CardContent } from "@/components/ui/card";
 import { getComments, getPost } from "@/lib/api";
-import { useUpvotePost } from "@/lib/api-hooks";
+import { useUpvoteComment, useUpvotePost } from "@/lib/api-hooks";
 import { orderSchema, sortBySchema } from "@/shared/types";
 import {
   infiniteQueryOptions,
@@ -17,8 +17,8 @@ import { useState } from "react";
 import z from "zod";
 
 const postSearchSchema = z.object({
-  sortBy: sortBySchema.optional().default("points"),
-  order: orderSchema.optional().default("desc"),
+  sortBy: sortBySchema.optional().default("recent"),
+  order: orderSchema.optional().default("asc"),
 });
 
 type GetPostsReturnType = Awaited<ReturnType<typeof getComments>>;
@@ -92,6 +92,7 @@ function RouteComponent() {
     commentsInfiniteQueryOptions({ order, sortBy, postId })
   );
   const upvotePost = useUpvotePost();
+  const upvoteComment = useUpvoteComment();
 
   return (
     <>
@@ -126,9 +127,7 @@ function RouteComponent() {
                   activeReplyId={activeReplayId}
                   setActiveReplyId={setActiveReplayId}
                   isLast={i === page.data.length - 1}
-                  toggleUpvote={() => {
-                    console.log("upvoted");
-                  }}
+                  toggleUpvote={upvoteComment.mutate}
                 />
               ))
             )}

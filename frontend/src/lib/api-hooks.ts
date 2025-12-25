@@ -1,10 +1,15 @@
-import { PaginatedResponse, Post, SuccessResponse } from "@/shared/types";
+import {
+  Comment,
+  PaginatedResponse,
+  Post,
+  SuccessResponse,
+} from "@/shared/types";
 import {
   InfiniteData,
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
-import { upvotePost } from "./api";
+import { upvoteComment, upvotePost } from "./api";
 import { current, produce } from "immer";
 import { toast } from "sonner";
 
@@ -101,6 +106,80 @@ export const useUpvotePost = () => {
         );
         queryClient.invalidateQueries({
           queryKey: ["posts"],
+        });
+      }
+    },
+  });
+};
+
+export const useUpvoteComment = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: {
+      id: string;
+      postId: number | null;
+      parentCommentId: number | null;
+    }) => upvoteComment(data.id),
+
+    onMutate: async ({ id }) => {
+      // 1. Cancel all related comment queries to prevent overwrites
+      await queryClient.cancelQueries({
+        predicate: (q) => q.queryKey[0] === "comments",
+      });
+
+      // 2. Snapshot the current state of ALL comment queries
+      const prevQueries = queryClient.getQueriesData({
+        predicate: (q) => q.queryKey[0] === "comments",
+      });
+
+      // 3. Optimistically update all matching caches
+      queryClient.setQueriesData<InfiniteData<PaginatedResponse<Comment[]>>>(
+        { predicate: (q) => q.queryKey[0] === "comments" },
+        produce((oldData) => {
+          if (!oldData) return;
+
+          oldData.pages.forEach((page) =>
+            page.data.forEach((comment) => {
+              if (comment.id.toString() === id) {
+                const isUpvoted = comment.commentUpvotes.length > 0;
+                comment.points += isUpvoted ? -1 : 1;
+                comment.commentUpvotes = isUpvoted ? [] : [{ userId: "me" }];
+              }
+            })
+          );
+        })
+      );
+
+      return { prevQueries };
+    },
+
+    onSuccess: (data, { id }) => {
+      queryClient.setQueriesData<InfiniteData<PaginatedResponse<Comment[]>>>(
+        { predicate: (q) => q.queryKey[0] === "comments" },
+        produce((oldData) => {
+          if (!oldData) return;
+          oldData.pages.forEach((page) =>
+            page.data.forEach((comment) => {
+              if (comment.id.toString() === id) {
+                comment.points = data.data.count;
+                comment.commentUpvotes = data.data.isUpvoted
+                  ? [{ userId: "me" }]
+                  : [];
+              }
+            })
+          );
+        })
+      );
+    },
+
+    onError: (_err, _vars, context) => {
+      toast.error("Failed to upvote comment");
+
+      // 4. Rollback each query specifically to its previous state
+      if (context?.prevQueries) {
+        context.prevQueries.forEach(([queryKey, oldData]) => {
+          queryClient.setQueryData(queryKey, oldData);
         });
       }
     },

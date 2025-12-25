@@ -18,6 +18,7 @@ import { getCommentComments } from "@/lib/api";
 import { Link } from "@tanstack/react-router";
 import { defaultHomeSearchParams } from "@/routes";
 import { Separator } from "./ui/separator";
+import { useUpvoteComment } from "@/lib/api-hooks";
 
 type GetCommentCommentsReturnType = Awaited<
   ReturnType<typeof getCommentComments>
@@ -29,7 +30,7 @@ type CommentCardProps = {
   activeReplyId: number | null;
   setActiveReplyId: React.Dispatch<React.SetStateAction<number | null>>;
   isLast: boolean;
-  toggleUpvote: () => void;
+  toggleUpvote: ReturnType<typeof useUpvoteComment>["mutate"];
 };
 
 export function CommentCard({
@@ -45,7 +46,9 @@ export function CommentCard({
   const queryClient = useQueryClient();
 
   const user = useSession().data?.user;
-  const isUpvoted = comment.commentUpvotes.length > 0;
+
+  const isUpvoted = comment.commentUpvotes?.length > 0;
+
   const isReplying = activeReplyId === comment.id;
 
   const {
@@ -92,15 +95,22 @@ export function CommentCard({
       <div className="py-2">
         <div className="mb-2 flex items-center space-x-1 text-xs">
           <button
-            disabled={!user}
             className={cn(
-              "flex items-center space-x-1 hover:text-primary cursor-pointer",
+              "flex items-center space-x-1 cursor-pointer hover:text-primary",
               isUpvoted ? "text-primary" : "text-muted-foreground"
             )}
+            onClick={() =>
+              toggleUpvote({
+                id: comment.id.toString(),
+                postId: comment.postId,
+                parentCommentId: comment.parentCommentId,
+              })
+            }
           >
             <ChevronUpIcon size={14} />
             <span className="font-medium">{comment.points}</span>
           </button>
+
           <span className="text-muted-foreground">·</span>
           <Link
             className="hover:underline ml-1"
