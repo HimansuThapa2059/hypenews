@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 
 const rootRouter = new Hono().get("/", (c) =>
-  c.text("Hey there 👋! Welcome to hono api for HyperNews")
+  c.text("Hey there 👋! Welcome to hono api for HypeNews")
 );
 
 export default rootRouter;

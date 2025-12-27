@@ -106,7 +106,8 @@ export function CommentCard({
           <button
             className={cn(
               "flex items-center space-x-1 cursor-pointer hover:text-primary",
-              isUpvoted ? "text-primary" : "text-muted-foreground"
+              isUpvoted ? "text-primary" : "text-muted-foreground",
+              !user && "opacity-50 cursor-not-allowed"
             )}
             onClick={() =>
               toggleUpvote({
