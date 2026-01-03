@@ -1,9 +1,12 @@
 .PHONY: env setup start db-up db-setup db-down db-reset clean
 
 env:
-	@echo "🔧 Copying .env.example to .env..."
-	cp .env.example .env || true
-	@echo "✅ Environment file ready"
+	@if [ ! -f .env ]; then \
+		echo "🔧 Creating .env from .env.example..."; \
+		cp .env.example .env; \
+	else \
+		echo "✅ .env already exists"; \
+	fi
 
 setup:
 	@echo "🚀 Starting local Docker services..."
@@ -11,12 +14,12 @@ setup:
 	@echo "📦 Installing backend dependencies..."
 	bun install
 	@echo "📦 Installing frontend dependencies..."
-	(cd frontend && bun install)
+	(cd frontend && bun install && bun run build)
 	@echo "✅ Local environment ready"
 
 start:
 	@echo "🚀 Starting development servers..."
-	(bun dev &) && (cd frontend && bun dev)
+	(bun server/index.ts)
 	@echo "✅ Development servers running"
 
 db-up:
@@ -40,3 +43,6 @@ db-reset:
 	@echo "⚠️ Resetting database (all data will be lost)..."
 	docker compose -f docker-compose.local.yaml down -v
 	@echo "✅ Database reset complete"
+
+run-prod:
+	NODE_ENV=production bun --env-file=.env.prod server/index.ts

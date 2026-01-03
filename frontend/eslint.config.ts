@@ -1,6 +1,5 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-
 import { defineConfig } from "eslint/config";
 import js from "@eslint/js";
 import globals from "globals";
@@ -29,23 +28,31 @@ export default defineConfig([
   },
 
   // TypeScript recommended
-  ...tseslint.configs.recommended,
+  ...(tseslint.configs.recommended ? [tseslint.configs.recommended] : []),
 
   // React configs
-  pluginReact.configs.flat.recommended,
-  pluginReact.configs.flat["jsx-runtime"],
+  ...(pluginReact.configs.flat?.["recommended"]
+    ? [pluginReact.configs.flat["recommended"]]
+    : []),
+  ...(pluginReact.configs.flat?.["jsx-runtime"]
+    ? [pluginReact.configs.flat["jsx-runtime"]]
+    : []),
 
   // JSX Accessibility
-  jsxA11y.flatConfigs.recommended,
+  ...(jsxA11y.flatConfigs.recommended ? [jsxA11y.flatConfigs.recommended] : []),
 
   // TanStack plugins
-  ...pluginRouter.configs["flat/recommended"],
-  ...pluginQuery.configs["flat/recommended"],
+  ...(pluginRouter.configs?.["flat/recommended"]
+    ? [...pluginRouter.configs["flat/recommended"]]
+    : []),
+  ...(pluginQuery.configs?.["flat/recommended"]
+    ? [...pluginQuery.configs["flat/recommended"]]
+    : []),
 
   // Prettier
-  eslintConfigPrettier,
+  ...(eslintConfigPrettier ? [eslintConfigPrettier] : []),
 
-  // Custom rules & settings
+  // Custom rules & setting
   {
     settings: {
       react: {

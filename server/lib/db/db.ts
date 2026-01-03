@@ -13,12 +13,35 @@
 
 // export const db = drizzle(client, { schema });
 
+//////////////////////////
+
+// import { drizzle } from "drizzle-orm/postgres-js";
+// import postgres from "postgres";
+// import { drizzle as drizzleNeon } from "drizzle-orm/neon-http";
+// import { neon } from "@neondatabase/serverless";
+// import { z } from "zod";
+// import { schema } from "./schema";
+
+// const EnvSchema = z.object({
+//   DATABASE_URL: z.string().min(1),
+//   NODE_ENV: z.enum(["development", "production"]).default("development"),
+// });
+
+// const env = EnvSchema.parse(process.env);
+
+// export const db =
+//   env.NODE_ENV === "production"
+//     ? drizzleNeon(neon(env.DATABASE_URL), { schema })
+//     : drizzle(postgres(env.DATABASE_URL), { schema });
+
+///////////////////////////
+
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { drizzle as drizzleNeon } from "drizzle-orm/neon-http";
 import { neon } from "@neondatabase/serverless";
-import { z } from "zod";
 import { schema } from "./schema";
+import z from "zod";
 
 const EnvSchema = z.object({
   DATABASE_URL: z.string().min(1),
@@ -27,7 +50,16 @@ const EnvSchema = z.object({
 
 const env = EnvSchema.parse(process.env);
 
-export const db =
-  env.NODE_ENV === "production"
-    ? drizzleNeon(neon(env.DATABASE_URL), { schema })
-    : drizzle(postgres(env.DATABASE_URL), { schema });
+export type DB = ReturnType<typeof drizzle<typeof schema>>;
+
+export const createDb = (): DB => {
+  if (process.env.NODE_ENV === "production") {
+    const client = neon(env.DATABASE_URL);
+    return drizzleNeon(client, { schema }) as unknown as DB;
+  } else {
+    const client = postgres(env.DATABASE_URL);
+    return drizzle(client, { schema }) as DB;
+  }
+};
+
+export const db = createDb();
